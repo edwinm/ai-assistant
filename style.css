@@ -1,0 +1,32 @@
+:root {
+  width: 500px;
+  height: 300px;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+body {
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  background-color: yellow;
+}
+
+code, var, kbd, samp, tt, dir,
+abbr, acronym, code, h2, h3, h4 {
+  -webkit-hyphens: none;
+  hyphens: none;
+}
+
+h1, h2, h3, h4 {
+  text-rendering: optimizeLegibility;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}

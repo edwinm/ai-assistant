@@ -29,3 +29,12 @@ h1, h2, h3, h4 {
 p {
   text-wrap: pretty;
 }
+
+#out {
+  white-space: pre-wrap;
+
+  &.error {
+    border: 3px solid red;
+    padding: 1rem;
+  }
+}

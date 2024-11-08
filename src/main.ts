@@ -1,34 +1,81 @@
-document.getElementById('date')!.textContent = new Date().toLocaleTimeString();
+import type {marked} from "marked";
 
 document.getElementById('start')!.addEventListener('click', async () => {
-    // Get the current active tab
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (!ai?.languageModel) {
+        error("It seems your browser doesn't support AI. Join the <a href=\"https://developer.chrome.com/docs/ai/built-in#get_an_early_preview\">Early Preview Program</a> to enable it.");
+        return;
+    }
+
+    const {available} = await ai.languageModel.capabilities();
+    if (available != 'readily') {
+        console.error('Capabilities not available');
+        error("It seems your browser doesn't have the required AI capabilities. Follow the instructions at the <a href=\"https://developer.chrome.com/docs/ai/built-in#get_an_early_preview\">Early Preview Program</a> to enable it.");
+        return;
+    }
+
+    const tab = await getCurrentTab();
 
     // Inject the script into the page
     const result = await chrome.scripting.executeScript({
-        target: { tabId: tab.id! },
+        target: {tabId: tab.id!},
         func: injectedFunction,
         args: [null]
     });
 
     console.log('result', result);
+    // what are the best products from the list below
+
+    const session = await ai.languageModel.create();
+
+    const out = document.getElementById("out")!;
+
+    const products = result[0].result?.data.replaceAll('------', `\n---\n`);
+
+    if (!products) {
+        console.error('No data');
+        error("There are no products found");
+        return;
+    }
+
+    // const products = result[0].result?.data;
+    const prompt = `what are the best products from the list below
+    
+    ${products}`;
+
+    console.log('prompt', prompt);
+
+    try {
+        const stream = session.promptStreaming(prompt);
+        for await (const chunk of stream) {
+            out.innerHTML = await marked.parse(chunk);
+        }
+    } catch (error) {
+        console.error(error);
+    }
+
+
 });
 
 // ~~~ Page ~~~
 
 // This function will be injected into the page context
 function injectedFunction(_messageFromPopup: any) {
-    // which one of the following laptops is best for a student
-    // Array.from(document.querySelectorAll(`[data-component-type="s-search-result"]`)).reduce((acc, entry) => `${acc}\n --- next item ---\n ${entry.textContent}`, '')
-
-    // Array.from(document.querySelectorAll(`[data-component-type="s-search-result"]`)).reduce((acc, entry) => `${acc}
-    // <item>${entry.textContent}</item>`, '').replaceAll('\n', ' ')
-
-    const data = Array.from(document.querySelectorAll(`[data-component-type="s-search-result"]`)).reduce((acc, entry) => entry.textContent?.includes("Sponsored") ? acc : `${acc}
-
-------
-${entry.textContent}`, '').replaceAll('\n', ' ')
-
+    const searchResults = Array.from(document.querySelectorAll(`[data-component-type="s-search-result"]`));
+    const data = searchResults.reduce((acc, entry) =>
+        entry.textContent?.includes("Sponsored") ? acc : `${acc}------${entry.textContent}`, '').replaceAll('\n', ' ')
 
     return {type: 'recommendation', data};
+}
+
+// ~~~ Functions ~~~
+
+async function getCurrentTab() {
+    const tabs = await chrome.tabs.query({active: true, currentWindow: true});
+    return tabs?.[0];
+}
+
+function error(text: string) {
+    const out = document.getElementById("out")!;
+    out.classList.add('error');
+    out.innerHTML = `<h3>I did something wrong!</h3><p>${text}</p>`;
 }

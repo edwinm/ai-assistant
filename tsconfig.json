@@ -1,21 +1,61 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    // Base Options recommended for all projects
+    "esModuleInterop": true,
     "skipLibCheck": true,
-
-    /* Linting */
+    "target": "es2022",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    // Enable strict type checking so you can catch bugs early
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true,
-
-    "types": ["chrome"]
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    // Transpile our TypeScript code to JavaScript
+    "module": "NodeNext",
+    "outDir": "dist",
+    // Include the DOM types
+    "lib": [
+      "es2022",
+      "dom",
+      "dom.iterable",
+      "es2020.intl",
+      "esnext.asynciterable",
+      "dom.asynciterable"
+    ],
+    "types": ["chrome", "dom-chromium-ai"]
   },
-  "include": ["src/*.ts"]
+  // Include the necessary files for your project
+  "include": [
+    "**/*.ts",
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
+
+
+//{
+//  "compilerOptions": {
+//    "outDir": "dist",
+//    "target": "ES2020",
+//    "useDefineForClassFields": true,
+//    "module": "NodeNext",
+//    "moduleResolution": "NodeNext",
+//    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+//    "skipLibCheck": true,
+//
+//    /* Linting */
+//    "strict": true,
+//    "noUnusedLocals": true,
+//    "noUnusedParameters": true,
+//    "noFallthroughCasesInSwitch": true,
+//    "noUncheckedSideEffectImports": true,
+//
+//    "types": ["chrome"],
+//    "typeRoots": ["./node_modules/@types"]
+//  },
+//  "include": ["src/*.ts", "./node_modules/@types/**/*.d.ts"]
+//}

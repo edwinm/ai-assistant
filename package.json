@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "@types/chrome": "^0.0.279",
+    "@types/dom-chromium-ai": "^0.0.2",
     "chrome-types": "^0.1.312",
     "marked": "^14.1.4",
     "typescript": "~5.6.2"

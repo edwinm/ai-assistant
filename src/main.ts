@@ -1,12 +1,14 @@
-import type {marked} from "marked";
+import type {marked as markedType} from "marked";
+// This looks stupid, but can't find a better way now
+declare const marked: typeof markedType;
 
 document.getElementById('start')!.addEventListener('click', async () => {
-    if (!ai?.languageModel) {
+    if (!window.ai?.languageModel) {
         error("It seems your browser doesn't support AI. Join the <a href=\"https://developer.chrome.com/docs/ai/built-in#get_an_early_preview\">Early Preview Program</a> to enable it.");
         return;
     }
 
-    const {available} = await ai.languageModel.capabilities();
+    const {available} = await window.ai.languageModel.capabilities();
     if (available != 'readily') {
         console.error('Capabilities not available');
         error("It seems your browser doesn't have the required AI capabilities. Follow the instructions at the <a href=\"https://developer.chrome.com/docs/ai/built-in#get_an_early_preview\">Early Preview Program</a> to enable it.");
@@ -14,6 +16,11 @@ document.getElementById('start')!.addEventListener('click', async () => {
     }
 
     const tab = await getCurrentTab();
+
+    if (!tab) {
+        error("No tab found.");
+        return;
+    }
 
     // Inject the script into the page
     const result = await chrome.scripting.executeScript({
@@ -25,11 +32,11 @@ document.getElementById('start')!.addEventListener('click', async () => {
     console.log('result', result);
     // what are the best products from the list below
 
-    const session = await ai.languageModel.create();
+    const session = await window.ai.languageModel.create();
 
     const out = document.getElementById("out")!;
 
-    const products = result[0].result?.data.replaceAll('------', `\n---\n`);
+    let products = result?.[0]?.result?.data;
 
     if (!products) {
         console.error('No data');
@@ -37,7 +44,8 @@ document.getElementById('start')!.addEventListener('click', async () => {
         return;
     }
 
-    // const products = result[0].result?.data;
+    products = products.replaceAll('------', `\n---\n`);
+
     const prompt = `what are the best products from the list below
     
     ${products}`;

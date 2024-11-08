@@ -1,5 +1,3 @@
-console.log('Hello World [1]');
-
 document.getElementById('date')!.textContent = new Date().toLocaleTimeString();
 
 document.getElementById('start')!.addEventListener('click', async () => {
@@ -7,63 +5,30 @@ document.getElementById('start')!.addEventListener('click', async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
     // Inject the script into the page
-    await chrome.scripting.executeScript({
+    const result = await chrome.scripting.executeScript({
         target: { tabId: tab.id! },
         func: injectedFunction,
-        // You can pass arguments to the injected function
-        args: ['Hello from popup!']
+        args: [null]
     });
+
+    console.log('result', result);
 });
 
-// Listen for messages from the injected script
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-    if (message.from === 'injected') {
-        console.log('Received from injected script:', message.data);
-        document.getElementById('out')!.textContent = message.data;
-        // You can send a response back if needed
-        sendResponse({ received: true });
-    }
-    // Important: return true if you want to send a response asynchronously
-    return true;
-});
+// ~~~ Page ~~~
 
 // This function will be injected into the page context
-function injectedFunction(messageFromPopup: any) {
-    // To send messages back to the extension
-    function sendToExtension(data: any) {
-        console.log('sendToExtension', data);
+function injectedFunction(_messageFromPopup: any) {
+    // which one of the following laptops is best for a student
+    // Array.from(document.querySelectorAll(`[data-component-type="s-search-result"]`)).reduce((acc, entry) => `${acc}\n --- next item ---\n ${entry.textContent}`, '')
 
-        chrome.runtime.sendMessage({
-            from: 'injected',
-            data: data
-        }, response => {
-            console.log('Extension responded:', response);
-        });
-    }
+    // Array.from(document.querySelectorAll(`[data-component-type="s-search-result"]`)).reduce((acc, entry) => `${acc}
+    // <item>${entry.textContent}</item>`, '').replaceAll('\n', ' ')
 
-    // Example: Do something with the message and send a response
-    console.log('Page received:', messageFromPopup);
-    sendToExtension(`Hello back from ${document.title}`);
+    const data = Array.from(document.querySelectorAll(`[data-component-type="s-search-result"]`)).reduce((acc, entry) => entry.textContent?.includes("Sponsored") ? acc : `${acc}
 
-    // You can also set up a global function to be called from the page
-    // @ts-ignore
-    window.sendToExtension = sendToExtension;
+------
+${entry.textContent}`, '').replaceAll('\n', ' ')
 
-    // You can return a value that will be available in the executeScript result
-    return 'Injection completed!';
-}
 
-// Example of how to call the injected script again
-async function executeInjectedScript() {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const results = await chrome.scripting.executeScript({
-        target: { tabId: tab.id! },
-        func: () => {
-            // This will call the function we previously injected
-            // @ts-ignore
-            window.sendToExtension('Message from another injection!');
-        }
-    });
-
-    console.log('results', results);
+    return {type: 'recommendation', data};
 }

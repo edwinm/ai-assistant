@@ -30,7 +30,6 @@ document.getElementById('start')!.addEventListener('click', async () => {
     });
 
     console.log('result', result);
-    // what are the best products from the list below
 
     const session = await window.ai.languageModel.create();
 
@@ -46,7 +45,8 @@ document.getElementById('start')!.addEventListener('click', async () => {
 
     products = products.replaceAll('------', `\n---\n`);
 
-    const prompt = `what are the best products from the list below
+    const prompt = `talk as a personal shopping assistant. what are the best products from the list below.
+    recommend one product and also give alternatives. describe for every product its cons and pros.
     
     ${products}`;
 

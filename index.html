@@ -25,12 +25,17 @@
         <p>What are you looking for?</p>
         <div class="search-inputs">
             <input type="search" id="search" name="search">
-            <input type="submit" id="submit" value="Search">
+            <input type="submit" value="Search">
         </div>
         <p>On the search results page, open Sophia, the AI Shopping Assistant, again.</p>
     </form>
+    <form id="refine-form" class="search" hidden>
+        <p>Please tell me how it will be used or your requirements so I can refine my recommendation.</p>
+        <textarea id="refine" name="refine"></textarea>
+        <input id="refine-submit" type="submit" value="Refine">
+    </form>
     <div id="out"></div>
-    <button id="reload">Reload</button>
+    <button id="reload"><img src="img/reload.svg" width="16" height="16"></button>
 </main>
 </body>
 </html>

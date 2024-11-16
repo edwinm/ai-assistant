@@ -37,7 +37,7 @@ p {
 }
 
 main {
-  margin: 20px;
+  padding: 20px;
 }
 
 header {
@@ -48,8 +48,6 @@ header {
 }
 
 #out {
-  white-space: pre-wrap;
-
   &.error {
     border: 3px solid red;
     padding: 1rem;
@@ -57,9 +55,12 @@ header {
 }
 
 #reload {
+  all: unset;
   position: absolute;
   top: 20px;
   right: 20px;
+  display: flex;
+  gap: 6px;
 }
 
 #search {
@@ -79,4 +80,29 @@ header {
   display: flex;
   justify-content: center;
   padding: 20px;
+}
+
+#refine {
+  width: 100%;
+}
+
+#refine-submit {
+  all: unset;
+  background: #FFCE00;
+  padding: 8px 20px;
+  border-radius: 20px;
+  margin: 10px 0;
+  border: 1px solid transparent;
+
+  &:hover {
+    background: #E5B900;
+  }
+
+  &:active {
+    background: #D0A800;
+  }
+
+  &:focus {
+    border: 1px solid #D0A800;
+  }
 }

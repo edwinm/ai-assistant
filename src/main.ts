@@ -2,19 +2,13 @@ import type {marked as markedType} from "marked";
 // This looks stupid, but can't find a better way now
 declare const marked: typeof markedType;
 
-document.getElementById('reload')!.addEventListener('click', doIt);
-window.addEventListener("load", doIt);
+let refineText = "";
 
-document.getElementById('search-form')?.addEventListener('submit', function(event) {
-    event.preventDefault();
-    const key = (document.getElementById('search') as HTMLInputElement)?.value;
-    const url = new URL("https://www.amazon.nl/s?k=");
-    url.searchParams.set('k', key);
-    chrome.tabs.create({url: url.toString(), active: true});
-    return false;
-});
+window.addEventListener("load", giveRecommendation);
 
-async function doIt() {
+
+
+async function giveRecommendation() {
     if (!window.ai?.languageModel) {
         error("It seems your browser doesn't support AI. Join the <a href=\"https://developer.chrome.com/docs/ai/built-in#get_an_early_preview\">Early Preview Program</a> to enable it.");
         return;
@@ -34,14 +28,17 @@ async function doIt() {
         return;
     }
 
+    // Everything okay
+    document.getElementById('reload')!.addEventListener('click', giveRecommendation);
+    document.getElementById('search-form')?.addEventListener('submit', processSearchForm);
+    document.getElementById('refine-form')?.addEventListener('submit', processRefineForm);
+
     // Inject the script into the page
     const result = await chrome.scripting.executeScript({
         target: {tabId: tab.id!},
         func: injectedFunction,
         args: [null]
     });
-
-    console.log('result', result);
 
     const session = await window.ai.languageModel.create();
 
@@ -57,24 +54,34 @@ async function doIt() {
 
     products = products.replaceAll('------', `\n---\n`);
 
+    const refineInsert = refineText ? `take the following into account: ${refineText}` : "";
+
     const prompt = `talk as a personal shopping assistant. what are the best products from the list below.
     recommend one product and also give alternatives. describe for every product its cons and pros.
+    ${refineInsert}
     
     ${products}`;
 
-    // console.log('prompt', prompt);
+    console.log('prompt', prompt);
+
+    let initiated = false;
+    let timer;
 
     try {
         const stream = session.promptStreaming(prompt);
         for await (const chunk of stream) {
+            console.log(chunk);
             out.innerHTML = await marked.parse(chunk);
-            stopThinking();
+            if (!initiated) {
+                stopThinking();
+                initiated = true;
+            }
+            clearTimeout(timer);
+            timer = setTimeout(showRefineForm, 2000);
         }
     } catch (error) {
         console.error(error);
     }
-
-
 }
 
 // ~~~ Page ~~~
@@ -96,6 +103,7 @@ async function getCurrentTab() {
 }
 
 function error(text: string) {
+    stopThinking();
     const out = document.getElementById("out")!;
     out.classList.add('error');
     out.innerHTML = `<h3>Sorry, I did something wrong!</h3><p>${text}</p>`;
@@ -103,4 +111,25 @@ function error(text: string) {
 
 function stopThinking() {
     document.getElementById("thinking")?.remove();
+}
+
+function showRefineForm() {
+    document.getElementById("refine-form")?.removeAttribute("hidden");
+}
+
+function processSearchForm(event: Event) {
+    event.preventDefault();
+    const key = (document.getElementById('search') as HTMLInputElement)?.value;
+    const url = new URL("https://www.amazon.nl/s?k=");
+    url.searchParams.set('k', key);
+    chrome.tabs.create({url: url.toString(), active: true});
+    return false;
+}
+
+
+function processRefineForm(event: Event) {
+    event.preventDefault();
+    refineText = (document.getElementById('refine') as HTMLTextAreaElement)?.value;
+    console.log(refineText);
+    giveRecommendation();
 }

@@ -10,21 +10,21 @@ window.addEventListener("load", giveRecommendation);
 
 async function giveRecommendation() {
     if (!window.ai?.languageModel) {
-        error("It seems your browser doesn't support AI. Join the <a href=\"https://developer.chrome.com/docs/ai/built-in#get_an_early_preview\">Early Preview Program</a> to enable it.");
+        showError("It seems your browser doesn't support AI. Join the <a href=\"https://developer.chrome.com/docs/ai/built-in#get_an_early_preview\">Early Preview Program</a> to enable it.");
         return;
     }
 
     const {available} = await window.ai.languageModel.capabilities();
     if (available != 'readily') {
         console.error('Capabilities not available');
-        error("It seems your browser doesn't have the required AI capabilities. Follow the instructions at the <a href=\"https://developer.chrome.com/docs/ai/built-in#get_an_early_preview\">Early Preview Program</a> to enable it.");
+        showError("It seems your browser doesn't have the required AI capabilities. Follow the instructions at the <a href=\"https://developer.chrome.com/docs/ai/built-in#get_an_early_preview\">Early Preview Program</a> to enable it.");
         return;
     }
 
     const tab = await getCurrentTab();
 
     if (!tab) {
-        error("No tab found.");
+        showError("No tab found.");
         return;
     }
 
@@ -70,17 +70,19 @@ async function giveRecommendation() {
     try {
         const stream = session.promptStreaming(prompt);
         for await (const chunk of stream) {
-            console.log(chunk);
-            out.innerHTML = await marked.parse(chunk);
-            if (!initiated) {
+            // console.log(chunk);
+            const clean = cleanOutput(chunk);
+            if (clean && !initiated) {
                 stopThinking();
                 initiated = true;
             }
+            out.innerHTML = await marked.parse(clean);
             clearTimeout(timer);
             timer = setTimeout(showRefineForm, 2000);
         }
     } catch (error) {
         console.error(error);
+        showError("I have some problems. Please try again.");
     }
 }
 
@@ -102,7 +104,7 @@ async function getCurrentTab() {
     return tabs?.[0];
 }
 
-function error(text: string) {
+function showError(text: string) {
     stopThinking();
     const out = document.getElementById("out")!;
     out.classList.add('error');
@@ -132,4 +134,12 @@ function processRefineForm(event: Event) {
     refineText = (document.getElementById('refine') as HTMLTextAreaElement)?.value;
     console.log(refineText);
     giveRecommendation();
+}
+
+// During testing, the output did start with input data
+// This function removes this "garbage" data
+// Remove this function when the provided data is clean
+function cleanOutput(chunk: string) {
+    const headingPos = chunk.indexOf('\n#');
+    return headingPos == -1 ? "" : chunk.substring(headingPos);
 }

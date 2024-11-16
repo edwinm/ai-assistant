@@ -2,7 +2,12 @@ import type {marked as markedType} from "marked";
 // This looks stupid, but can't find a better way now
 declare const marked: typeof markedType;
 
-document.getElementById('start')!.addEventListener('click', async () => {
+document.getElementById('reload')!.addEventListener('click', doIt);
+
+
+window.addEventListener("load", doIt);
+
+async function doIt() {
     if (!window.ai?.languageModel) {
         error("It seems your browser doesn't support AI. Join the <a href=\"https://developer.chrome.com/docs/ai/built-in#get_an_early_preview\">Early Preview Program</a> to enable it.");
         return;
@@ -62,7 +67,7 @@ document.getElementById('start')!.addEventListener('click', async () => {
     }
 
 
-});
+}
 
 // ~~~ Page ~~~
 
@@ -85,5 +90,5 @@ async function getCurrentTab() {
 function error(text: string) {
     const out = document.getElementById("out")!;
     out.classList.add('error');
-    out.innerHTML = `<h3>I did something wrong!</h3><p>${text}</p>`;
+    out.innerHTML = `<h3>Sorry, I did something wrong!</h3><p>${text}</p>`;
 }

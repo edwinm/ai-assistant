@@ -13,6 +13,7 @@
 body {
   -webkit-hyphens: auto;
   hyphens: auto;
+  margin: 0;
 }
 
 code, var, kbd, samp, tt, dir,
@@ -30,6 +31,22 @@ p {
   text-wrap: pretty;
 }
 
+.logo {
+  width: 25%;
+  height: 25%;
+}
+
+main {
+  margin: 20px;
+}
+
+header {
+  display: flex;
+  background-color: blanchedalmond;
+  padding: 20px;
+  gap: 10px;
+}
+
 #out {
   white-space: pre-wrap;
 
@@ -37,4 +54,23 @@ p {
     border: 3px solid red;
     padding: 1rem;
   }
+}
+
+#reload {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+#search {
+  width: calc(100% - 50px);
+}
+
+.header-text > * {
+  margin: 0;
+}
+
+.search-inputs {
+  display: flex;
+  gap: 5px;
 }

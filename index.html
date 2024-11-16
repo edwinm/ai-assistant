@@ -1,18 +1,32 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <link rel="stylesheet" href="style.css">
     <title>AI Shopping Assistant</title>
-    <script src="lib/marked.min.js"></script>
-  </head>
-  <body>
-    <main>
-      <h1>AI Shopping Assistant</h1>
-      <div id="out"></div>
-      <button id="start">Start</button>
-    </main>
-    <script type="module" src="dist/main.js"></script>
-  </body>
+    <script src="lib/marked.min.js" defer></script>
+    <script type="module" src="dist/main.js" defer></script>
+</head>
+<body>
+<header>
+    <img class="logo" src="img/icon-large.png" alt="AI Shopping Assistant Logo">
+    <div class="header-text">
+        <p>Hello, I am</p>
+        <h1>Sophia, the AI Shopping Assistant for Amazon</h1>
+        <p>I will give you recommendations for any product category on Amazon.</p>
+    </div>
+</header>
+<main>
+    <form class="search">
+        <p>What are you looking for?</p>
+        <div class="search-inputs">
+            <input type="search" id="search">
+            <input type="submit" id="submit" value="Search">
+        </div>
+    </form>
+    <div id="out"></div>
+    <button id="reload">Reload</button>
+</main>
+</body>
 </html>

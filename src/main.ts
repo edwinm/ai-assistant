@@ -3,9 +3,17 @@ import type {marked as markedType} from "marked";
 declare const marked: typeof markedType;
 
 document.getElementById('reload')!.addEventListener('click', doIt);
-
-
 window.addEventListener("load", doIt);
+
+
+document.getElementById('search-form')?.addEventListener('submit', function(event) {
+    event.preventDefault();
+    const key = (document.getElementById('search') as HTMLInputElement)?.value;
+    const url = new URL("https://www.amazon.nl/s?k=");
+    url.searchParams.set('k', key);
+    chrome.tabs.create({url: url.toString(), active: true});
+    return false;
+});
 
 async function doIt() {
     if (!window.ai?.languageModel) {
@@ -43,8 +51,7 @@ async function doIt() {
     let products = result?.[0]?.result?.data;
 
     if (!products) {
-        console.error('No data');
-        error("There are no products found");
+        document.getElementById("search-form")?.removeAttribute("hidden");
         return;
     }
 

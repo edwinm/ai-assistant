@@ -5,7 +5,6 @@ declare const marked: typeof markedType;
 document.getElementById('reload')!.addEventListener('click', doIt);
 window.addEventListener("load", doIt);
 
-
 document.getElementById('search-form')?.addEventListener('submit', function(event) {
     event.preventDefault();
     const key = (document.getElementById('search') as HTMLInputElement)?.value;
@@ -51,6 +50,7 @@ async function doIt() {
     let products = result?.[0]?.result?.data;
 
     if (!products) {
+        stopThinking();
         document.getElementById("search-form")?.removeAttribute("hidden");
         return;
     }
@@ -62,12 +62,13 @@ async function doIt() {
     
     ${products}`;
 
-    console.log('prompt', prompt);
+    // console.log('prompt', prompt);
 
     try {
         const stream = session.promptStreaming(prompt);
         for await (const chunk of stream) {
             out.innerHTML = await marked.parse(chunk);
+            stopThinking();
         }
     } catch (error) {
         console.error(error);
@@ -98,4 +99,8 @@ function error(text: string) {
     const out = document.getElementById("out")!;
     out.classList.add('error');
     out.innerHTML = `<h3>Sorry, I did something wrong!</h3><p>${text}</p>`;
+}
+
+function stopThinking() {
+    document.getElementById("thinking")?.remove();
 }

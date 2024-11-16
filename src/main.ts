@@ -122,7 +122,7 @@ function showRefineForm() {
 function processSearchForm(event: Event) {
     event.preventDefault();
     const key = (document.getElementById('search') as HTMLInputElement)?.value;
-    const url = new URL("https://www.amazon.nl/s?k=");
+    const url = new URL("https://www.amazon.com/s?k=");
     url.searchParams.set('k', key);
     chrome.tabs.create({url: url.toString(), active: true});
     return false;

@@ -58,17 +58,19 @@ header {
   }
 }
 
-#search {
-  width: calc(100% - 50px);
-}
-
 .header-text > * {
   margin: 0;
 }
 
 .search-inputs {
   display: flex;
-  gap: 5px;
+  align-items: center;
+  gap: 10px;
+}
+
+#search {
+  flex-grow: 1;
+  height: 30px;
 }
 
 #thinking {

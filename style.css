@@ -58,15 +58,6 @@ header {
   }
 }
 
-#reload {
-  all: unset;
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  display: flex;
-  gap: 6px;
-}
-
 #search {
   width: calc(100% - 50px);
 }
@@ -125,4 +116,8 @@ header {
   &:disabled {
     background: lightgrey;
   }
+}
+
+.error-message {
+  color: darkgrey;
 }

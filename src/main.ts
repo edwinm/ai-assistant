@@ -7,7 +7,6 @@ let currentUrl = "";
 window.addEventListener("load", initialize);
 
 async function initialize() {
-    document.getElementById('reload')?.addEventListener('click', giveRecommendation);
     document.getElementById('search-form')?.addEventListener('submit', processSearchForm);
     document.getElementById('refine-form')?.addEventListener('submit', processRefineForm);
     document.getElementById('refine')?.addEventListener('keyup', handleRefineChange);
@@ -90,7 +89,7 @@ async function giveRecommendation() {
     
     ${products}`;
 
-    console.log('prompt', prompt);
+    // console.log('prompt', prompt);
 
     let initiated = false;
     try {
@@ -106,8 +105,7 @@ async function giveRecommendation() {
             out.innerHTML = await marked.parse(cleanText);
         }
     } catch (error) {
-        console.error('>', (error as Error).message);
-        showError(`I have some problems. Please try again. (${(error as Error).message})`);
+        showError(`I have some problems. Please click the button again.`, error as Error);
     }
 }
 
@@ -129,11 +127,11 @@ async function getCurrentTab() {
     return tabs?.[0];
 }
 
-function showError(text: string) {
+function showError(text: string, error?: Error) {
     stopThinking();
     const out = document.getElementById("out")!;
     out.classList.add('error');
-    out.innerHTML = `<h3>Sorry, I did something wrong!</h3><p>${text}</p>`;
+    out.innerHTML = `<h3>Sorry, I did something wrong!</h3><p>${text}</p>${error ? `<p class="error-message">${error.message}</p>` : ''}`;
 }
 
 function clearError() {

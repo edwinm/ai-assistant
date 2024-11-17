@@ -33,18 +33,17 @@ async function initialize() {
     currentUrl = await getCurrentUrl();
 
     const refineKey = `refineText:${currentUrl}`;
-    // @ts-ignore
-    const refineTextObject = await chrome.storage.session.get([refineKey]);
-    refineText = refineTextObject[refineKey];
+    const outKey = `outText:${currentUrl}`;
+
+    const sessionStore = await chrome.storage.session.get([refineKey, outKey]);
+    refineText = sessionStore[refineKey];
     if (refineText) {
         (document.getElementById('refine') as HTMLTextAreaElement)!.value = refineText;
         document.getElementById("refine-submit")?.removeAttribute("disabled");
         document.getElementById("skip-refine-submit")?.classList.add("secondary-button");
     }
 
-    const outKey = `outText:${currentUrl}`;
-    const outTextObject = await chrome.storage.session.get([outKey]);
-    const outText = outTextObject[outKey];
+    const outText = sessionStore[outKey];
     if (outText) {
         document.getElementById('out')!.innerHTML = await marked.parse(outText);
     }
@@ -97,6 +96,7 @@ async function giveRecommendation() {
 
     const prompt = `talk like a personal shopping assistant. what are the best products from the list below.
     recommend one product and also give alternatives. describe for every product its cons and pros.
+    respond in english.
     ${refineInsert}
     
     ${products}`.substring(0, 4000);

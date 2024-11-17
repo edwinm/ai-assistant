@@ -5,6 +5,8 @@ declare const marked: typeof markedType;
 let refineText = "";
 let currentUrl = "";
 window.addEventListener("load", initialize);
+let products = "";
+
 
 async function initialize() {
     document.addEventListener('click', documentClick);
@@ -13,8 +15,6 @@ async function initialize() {
         return;
     }
 
-    document.getElementById("refine-form")?.removeAttribute("hidden");
-
     document.getElementById('search-form')?.addEventListener('submit', processSearchForm);
     document.getElementById('refine-form')?.addEventListener('submit', processRefineForm);
     document.getElementById('refine')?.addEventListener('keyup', handleRefineChange);
@@ -22,6 +22,13 @@ async function initialize() {
     addEventListener("error", (event) => {
         showError(event.message)
     });
+
+    products = await fetchProducts();
+    if (products) {
+        document.getElementById("refine-form")?.removeAttribute("hidden");
+    } else {
+        document.getElementById("search-form")?.removeAttribute("hidden");
+    }
 
     currentUrl = await getCurrentUrl();
 
@@ -58,16 +65,12 @@ async function isAiCapable() {
     return true;
 }
 
-async function giveRecommendation() {
+async function fetchProducts() {
     const tab = await getCurrentTab();
     if (!tab) {
         showError("No tab found.");
-        return false;
+        return "";
     }
-
-    clearError();
-    startThinking();
-
 
     // Inject the script into the page
     const result = await chrome.scripting.executeScript({
@@ -76,16 +79,17 @@ async function giveRecommendation() {
         args: [null]
     });
 
+    let products = result?.[0]?.result?.data as string;
+
+    return products;
+}
+
+async function giveRecommendation() {
+    clearError();
+
     const session = await window.ai.languageModel.create();
 
     const out = document.getElementById("out")!;
-
-    let products = result?.[0]?.result?.data;
-
-    if (!products) {
-        stopThinking();
-        return;
-    }
 
     products = products.replaceAll('------', `\n---\n`);
 

@@ -7,6 +7,14 @@ let currentUrl = "";
 window.addEventListener("load", initialize);
 
 async function initialize() {
+    document.addEventListener('click', documentClick);
+
+    if (!await isAiCapable()) {
+        return;
+    }
+
+    document.getElementById("refine-form")?.removeAttribute("hidden");
+
     document.getElementById('search-form')?.addEventListener('submit', processSearchForm);
     document.getElementById('refine-form')?.addEventListener('submit', processRefineForm);
     document.getElementById('refine')?.addEventListener('keyup', handleRefineChange);
@@ -33,33 +41,33 @@ async function initialize() {
     if (outText) {
         document.getElementById('out')!.innerHTML = await marked.parse(outText);
     }
-
-    console.log('Initialized')
 }
 
-async function giveRecommendation() {
+async function isAiCapable() {
     if (!window.ai?.languageModel) {
         showError("It seems your browser doesn't support AI. Join the <a href=\"https://developer.chrome.com/docs/ai/built-in#get_an_early_preview\">Early Preview Program</a> to enable it.");
-        return;
+        return false;
     }
 
     const {available} = await window.ai.languageModel.capabilities();
     if (available != 'readily') {
-        console.error('Capabilities not available');
         showError("It seems your browser doesn't have the required AI capabilities. Follow the instructions at the <a href=\"https://developer.chrome.com/docs/ai/built-in#get_an_early_preview\">Early Preview Program</a> to enable it.");
-        return;
+        return false;
     }
 
-    const tab = await getCurrentTab();
+    return true;
+}
 
+async function giveRecommendation() {
+    const tab = await getCurrentTab();
     if (!tab) {
         showError("No tab found.");
-        return;
+        return false;
     }
 
-    // Everything okay
     clearError();
     startThinking();
+
 
     // Inject the script into the page
     const result = await chrome.scripting.executeScript({
@@ -197,4 +205,11 @@ async function getCurrentUrl() {
             resolve(tabs[0]!.url!);
         });
     })
+}
+
+function documentClick(event: MouseEvent) {
+    const href = (event.target as HTMLAnchorElement).href;
+    if(href) {
+        chrome.tabs.create({url: href, active: true});
+    }
 }

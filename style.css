@@ -31,6 +31,10 @@ p {
   text-wrap: pretty;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 .logo {
   width: 25%;
   height: 25%;
@@ -78,7 +82,9 @@ header {
 
 #thinking {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   padding: 20px;
 }
 

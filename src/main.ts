@@ -3,10 +3,9 @@ import type {marked as markedType} from "marked";
 declare const marked: typeof markedType;
 
 let refineText = "";
+let hasError = false;
 
 window.addEventListener("load", giveRecommendation);
-
-
 
 async function giveRecommendation() {
     if (!window.ai?.languageModel) {
@@ -29,9 +28,13 @@ async function giveRecommendation() {
     }
 
     // Everything okay
-    document.getElementById('reload')!.addEventListener('click', giveRecommendation);
+    document.getElementById('reload')?.addEventListener('click', giveRecommendation);
     document.getElementById('search-form')?.addEventListener('submit', processSearchForm);
     document.getElementById('refine-form')?.addEventListener('submit', processRefineForm);
+    addEventListener("error", (event) => {
+        showError(event.message)
+    });
+    clearError();
 
     // Inject the script into the page
     const result = await chrome.scripting.executeScript({
@@ -62,7 +65,7 @@ async function giveRecommendation() {
     
     ${products}`;
 
-    console.log('prompt', prompt);
+    // console.log('prompt', prompt);
 
     let initiated = false;
     let timer;
@@ -109,14 +112,28 @@ function showError(text: string) {
     const out = document.getElementById("out")!;
     out.classList.add('error');
     out.innerHTML = `<h3>Sorry, I did something wrong!</h3><p>${text}</p>`;
+    hasError = true;
+}
+
+function clearError() {
+    const out = document.getElementById("out")!;
+    out.classList.remove('error');
+    out.innerHTML = ``;
+    hasError = false;
+}
+
+function startThinking() {
+    document.getElementById("thinking")?.removeAttribute("hidden");
 }
 
 function stopThinking() {
-    document.getElementById("thinking")?.remove();
+    document.getElementById("thinking")?.setAttribute("hidden", "");
 }
 
 function showRefineForm() {
-    document.getElementById("refine-form")?.removeAttribute("hidden");
+    if (!hasError) {
+        document.getElementById("refine-form")?.removeAttribute("hidden");
+    }
 }
 
 function processSearchForm(event: Event) {
@@ -132,7 +149,7 @@ function processSearchForm(event: Event) {
 function processRefineForm(event: Event) {
     event.preventDefault();
     refineText = (document.getElementById('refine') as HTMLTextAreaElement)?.value;
-    console.log(refineText);
+    startThinking();
     giveRecommendation();
 }
 

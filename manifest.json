@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "AI Assistant",
-  "description": "AI Shopping Assistant",
+  "name": "Sophia, the AI Shopping Assistant",
+  "description": "Sophia gives buying advise for any product categoy on Amazon",
   "version": "1.0",
   "action": {
     "default_popup": "index.html"
@@ -11,6 +11,6 @@
     "48": "img/icon-48.png",
     "128": "img/icon-128.png"
   },
-  "permissions": ["scripting", "activeTab"]
+  "permissions": ["scripting", "activeTab", "storage"]
 
 }

@@ -3,11 +3,10 @@ import type {marked as markedType} from "marked";
 declare const marked: typeof markedType;
 
 let refineText = "";
-let hasError = false;
+let currentUrl = "";
+window.addEventListener("load", initialize);
 
-window.addEventListener("load", addEventHandlers);
-
-function addEventHandlers() {
+async function initialize() {
     document.getElementById('reload')?.addEventListener('click', giveRecommendation);
     document.getElementById('search-form')?.addEventListener('submit', processSearchForm);
     document.getElementById('refine-form')?.addEventListener('submit', processRefineForm);
@@ -16,6 +15,27 @@ function addEventHandlers() {
     addEventListener("error", (event) => {
         showError(event.message)
     });
+
+    currentUrl = await getCurrentUrl();
+
+    const refineKey = `refineText:${currentUrl}`;
+    // @ts-ignore
+    const refineTextObject = await chrome.storage.session.get([refineKey]);
+    refineText = refineTextObject[refineKey];
+    if (refineText) {
+        (document.getElementById('refine') as HTMLTextAreaElement)!.value = refineText;
+        document.getElementById("refine-submit")?.removeAttribute("disabled");
+        document.getElementById("skip-refine-submit")?.classList.add("secondary-button");
+    }
+
+    const outKey = `outText:${currentUrl}`;
+    const outTextObject = await chrome.storage.session.get([outKey]);
+    const outText = outTextObject[outKey];
+    if (outText) {
+        document.getElementById('out')!.innerHTML = await marked.parse(outText);
+    }
+
+    console.log('Initialized')
 }
 
 async function giveRecommendation() {
@@ -62,7 +82,7 @@ async function giveRecommendation() {
 
     products = products.replaceAll('------', `\n---\n`);
 
-    const refineInsert = refineText ? `take the following into account: ${refineText}` : "";
+    const refineInsert = refineText ? `take the following into account ${refineText}` : "";
 
     const prompt = `talk as a personal shopping assistant. what are the best products from the list below.
     recommend one product and also give alternatives. describe for every product its cons and pros.
@@ -70,27 +90,24 @@ async function giveRecommendation() {
     
     ${products}`;
 
-    // console.log('prompt', prompt);
+    console.log('prompt', prompt);
 
     let initiated = false;
-    let timer;
-
     try {
         const stream = session.promptStreaming(prompt);
         for await (const chunk of stream) {
             // console.log(chunk);
-            const clean = cleanOutput(chunk);
-            if (clean && !initiated) {
+            const cleanText = cleanOutput(chunk);
+            if (cleanText && !initiated) {
                 stopThinking();
                 initiated = true;
             }
-            out.innerHTML = await marked.parse(clean);
-            clearTimeout(timer);
-            timer = setTimeout(showRefineForm, 2000);
+            chrome.storage.session.set({ [`outText:${currentUrl}`]: cleanText });
+            out.innerHTML = await marked.parse(cleanText);
         }
     } catch (error) {
-        console.error(error);
-        showError("I have some problems. Please try again.");
+        console.error('>', (error as Error).message);
+        showError(`I have some problems. Please try again. (${(error as Error).message})`);
     }
 }
 
@@ -117,14 +134,12 @@ function showError(text: string) {
     const out = document.getElementById("out")!;
     out.classList.add('error');
     out.innerHTML = `<h3>Sorry, I did something wrong!</h3><p>${text}</p>`;
-    hasError = true;
 }
 
 function clearError() {
     const out = document.getElementById("out")!;
     out.classList.remove('error');
     out.innerHTML = ``;
-    hasError = false;
 }
 
 function startThinking() {
@@ -133,12 +148,6 @@ function startThinking() {
 
 function stopThinking() {
     document.getElementById("thinking")?.setAttribute("hidden", "");
-}
-
-function showRefineForm() {
-    if (!hasError) {
-        document.getElementById("refine-form")?.removeAttribute("hidden");
-    }
 }
 
 function processSearchForm(event: SubmitEvent) {
@@ -151,7 +160,7 @@ function processSearchForm(event: SubmitEvent) {
 }
 
 
-function processRefineForm(event: SubmitEvent) {
+async function processRefineForm(event: SubmitEvent) {
     event.preventDefault();
 
     if (event.submitter?.id == "skip-refine-submit") {
@@ -159,6 +168,8 @@ function processRefineForm(event: SubmitEvent) {
     } else {
         refineText = (document.getElementById('refine') as HTMLTextAreaElement)?.value;
     }
+
+    chrome.storage.session.set({ [`refineText:${currentUrl}`]: refineText });
 
     startThinking();
     giveRecommendation();
@@ -180,4 +191,12 @@ function handleRefineChange(event: Event) {
         document.getElementById("refine-submit")?.setAttribute("disabled", "");
         document.getElementById("skip-refine-submit")?.classList.remove("secondary-button");
     }
+}
+
+async function getCurrentUrl() {
+    return new Promise<string>((resolve, reject) => {
+        chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+            resolve(tabs[0]!.url!);
+        });
+    })
 }

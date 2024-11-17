@@ -1,3 +1,11 @@
+@font-face {
+  font-family: Sora;
+  src: url('font/Sora-SemiBold.woff2') format('woff2');
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   width: 500px;
   height: 300px;
@@ -11,18 +19,11 @@
 }
 
 body {
-  -webkit-hyphens: auto;
-  hyphens: auto;
   margin: 0;
 }
 
-code, var, kbd, samp, tt, dir,
-abbr, acronym, code, h2, h3, h4 {
-  -webkit-hyphens: none;
-  hyphens: none;
-}
-
 h1, h2, h3, h4 {
+  font-family: Sora, sans-serif;
   text-rendering: optimizeLegibility;
   text-wrap: balance;
 }
@@ -96,7 +97,7 @@ header {
   padding: 8px 20px;
   border-radius: 20px;
   margin: 10px 0;
-  border: 1px solid transparent;
+  border: 2px solid transparent;
 
   &.secondary-button {
     background: transparent;
@@ -112,7 +113,7 @@ header {
   }
 
   &:focus {
-    border: 1px solid #D0A800;
+    border-color: brown;
   }
 
   &:disabled {

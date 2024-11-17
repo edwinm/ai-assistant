@@ -20,7 +20,7 @@ async function initialize() {
     document.getElementById('refine')?.addEventListener('keyup', handleRefineChange);
 
     addEventListener("error", (event) => {
-        showError(event.message)
+        showError("Oops, I made an error", (event as ErrorEvent).message);
     });
 
     products = await fetchProducts();
@@ -93,13 +93,13 @@ async function giveRecommendation() {
 
     products = products.replaceAll('------', `\n---\n`);
 
-    const refineInsert = refineText ? `take the following into account ${refineText}` : "";
+    const refineInsert = refineText ? `take the following into account: ${refineText}` : "";
 
-    const prompt = `talk as a personal shopping assistant. what are the best products from the list below.
+    const prompt = `talk like a personal shopping assistant. what are the best products from the list below.
     recommend one product and also give alternatives. describe for every product its cons and pros.
     ${refineInsert}
     
-    ${products}`;
+    ${products}`.substring(0, 4000);
 
     // console.log('prompt', prompt);
 
@@ -117,7 +117,7 @@ async function giveRecommendation() {
             out.innerHTML = await marked.parse(cleanText);
         }
     } catch (error) {
-        showError(`I have some problems. Please click the button again.`, error as Error);
+        showError(`I have some problems. Please click the button again.`, (error as Error).message);
     }
 }
 
@@ -139,11 +139,11 @@ async function getCurrentTab() {
     return tabs?.[0];
 }
 
-function showError(text: string, error?: Error) {
+function showError(text: string, message?: string) {
     stopThinking();
     const out = document.getElementById("out")!;
     out.classList.add('error');
-    out.innerHTML = `<h3>Sorry, I did something wrong!</h3><p>${text}</p>${error ? `<p class="error-message">${error.message}</p>` : ''}`;
+    out.innerHTML = `<h3>Sorry, I did something wrong!</h3><p>${text}</p>${message ? `<p class="error-message">${message}</p>` : ''}`;
 }
 
 function clearError() {

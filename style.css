@@ -92,13 +92,23 @@ header {
   width: 100%;
 }
 
-#refine-submit {
+.refine-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.button {
   all: unset;
   background: #FFCE00;
   padding: 8px 20px;
   border-radius: 20px;
   margin: 10px 0;
   border: 1px solid transparent;
+
+  &.secondary-button {
+    background: transparent;
+    border: 1px solid #FFCE00;
+  }
 
   &:hover {
     background: #E5B900;
@@ -110,5 +120,9 @@ header {
 
   &:focus {
     border: 1px solid #D0A800;
+  }
+
+  &:disabled {
+    background: lightgrey;
   }
 }

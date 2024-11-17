@@ -18,10 +18,6 @@
     </div>
 </header>
 <main>
-    <div id="thinking">
-        <img src="img/grid.svg" alt="Thinking..." width="50" height="50">
-        <p>One moment please, I'm analysing the data&hellip;</p>
-    </div>
     <form id="search-form" class="search" hidden>
         <p>What are you looking for?</p>
         <div class="search-inputs">
@@ -30,12 +26,23 @@
         </div>
         <p>On the search results page, open Sophia, the AI Shopping Assistant, again.</p>
     </form>
-    <form id="refine-form" class="search" hidden>
+
+    <form id="refine-form" class="search">
         <p>Please tell me how it will be used or your requirements so I can refine my recommendation.</p>
-        <textarea id="refine" name="refine"></textarea>
-        <input id="refine-submit" type="submit" value="Refine">
+        <textarea id="refine" name="refine" rows="3"></textarea>
+        <div class="refine-buttons">
+            <input id="refine-submit" class="button" type="submit" value="Refine" disabled>
+            <input id="skip-refine-submit" class="button" type="submit" value="Skip">
+        </div>
     </form>
+
+    <div id="thinking" hidden>
+        <img src="img/grid.svg" alt="Thinking..." width="50" height="50">
+        <p>One moment please, I'm analysing the data&hellip;</p>
+    </div>
+
     <div id="out"></div>
+
     <button id="reload"><img src="img/reload.svg" width="16" height="16"></button>
 </main>
 </body>

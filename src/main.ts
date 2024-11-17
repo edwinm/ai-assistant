@@ -5,7 +5,18 @@ declare const marked: typeof markedType;
 let refineText = "";
 let hasError = false;
 
-window.addEventListener("load", giveRecommendation);
+window.addEventListener("load", addEventHandlers);
+
+function addEventHandlers() {
+    document.getElementById('reload')?.addEventListener('click', giveRecommendation);
+    document.getElementById('search-form')?.addEventListener('submit', processSearchForm);
+    document.getElementById('refine-form')?.addEventListener('submit', processRefineForm);
+    document.getElementById('refine')?.addEventListener('keyup', handleRefineChange);
+
+    addEventListener("error", (event) => {
+        showError(event.message)
+    });
+}
 
 async function giveRecommendation() {
     if (!window.ai?.languageModel) {
@@ -28,13 +39,8 @@ async function giveRecommendation() {
     }
 
     // Everything okay
-    document.getElementById('reload')?.addEventListener('click', giveRecommendation);
-    document.getElementById('search-form')?.addEventListener('submit', processSearchForm);
-    document.getElementById('refine-form')?.addEventListener('submit', processRefineForm);
-    addEventListener("error", (event) => {
-        showError(event.message)
-    });
     clearError();
+    startThinking();
 
     // Inject the script into the page
     const result = await chrome.scripting.executeScript({
@@ -51,7 +57,6 @@ async function giveRecommendation() {
 
     if (!products) {
         stopThinking();
-        document.getElementById("search-form")?.removeAttribute("hidden");
         return;
     }
 
@@ -136,7 +141,7 @@ function showRefineForm() {
     }
 }
 
-function processSearchForm(event: Event) {
+function processSearchForm(event: SubmitEvent) {
     event.preventDefault();
     const key = (document.getElementById('search') as HTMLInputElement)?.value;
     const url = new URL("https://www.amazon.com/s?k=");
@@ -146,9 +151,15 @@ function processSearchForm(event: Event) {
 }
 
 
-function processRefineForm(event: Event) {
+function processRefineForm(event: SubmitEvent) {
     event.preventDefault();
-    refineText = (document.getElementById('refine') as HTMLTextAreaElement)?.value;
+
+    if (event.submitter?.id == "skip-refine-submit") {
+        refineText = "";
+    } else {
+        refineText = (document.getElementById('refine') as HTMLTextAreaElement)?.value;
+    }
+
     startThinking();
     giveRecommendation();
 }
@@ -159,4 +170,14 @@ function processRefineForm(event: Event) {
 function cleanOutput(chunk: string) {
     const headingPos = chunk.indexOf('\n#');
     return headingPos == -1 ? "" : chunk.substring(headingPos);
+}
+
+function handleRefineChange(event: Event) {
+    if ((event.target as HTMLTextAreaElement)?.value) {
+        document.getElementById("refine-submit")?.removeAttribute("disabled");
+        document.getElementById("skip-refine-submit")?.classList.add("secondary-button");
+    } else {
+        document.getElementById("refine-submit")?.setAttribute("disabled", "");
+        document.getElementById("skip-refine-submit")?.classList.remove("secondary-button");
+    }
 }

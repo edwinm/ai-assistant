@@ -95,10 +95,8 @@ async function giveRecommendation() {
 
     products = products.replaceAll('------', `\n\n`);
 
-    const prompt = `
-talk like a personal shopping assistant. recommend the best product from the list below. then give three alternatives. describe for every product its pros and cons.
-use english. don't show table or productlist.
-start with a heading with recommended product.
+    const prompt = `recommend the best product from the list below, then give three alternative products. describe for every product its pros and cons.
+use english. directly start with a heading with the recommended product.
 ${refineText}
 
 ${products}`;
@@ -107,10 +105,9 @@ ${products}`;
         const stream = session.promptStreaming(prompt);
         let cleanText;
         for await (const chunk of stream) {
-            cleanText = cleanOutput(chunk);
             stopThinking();
-            out.innerHTML = await marked.parse(cleanText || chunk);
-            if (cleanText) {
+            out.innerHTML = await marked.parse(chunk);
+            if (chunk) {
                 out.classList.remove("grey");
             }
         }
@@ -186,14 +183,6 @@ async function processRefineForm(event: SubmitEvent) {
 
     startThinking();
     giveRecommendation();
-}
-
-// During testing, the output did start with input data
-// This function removes this "garbage" data
-// Remove this function when the provided data is clean
-function cleanOutput(chunk: string) {
-    const headingPos = chunk.indexOf('\n#');
-    return headingPos == -1 ? "" : chunk.substring(headingPos);
 }
 
 function handleRefineChange(event: Event) {

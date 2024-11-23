@@ -4,8 +4,8 @@ declare const marked: typeof markedType;
 
 let refineText = "";
 let currentUrl = "";
-window.addEventListener("load", initialize);
 let products = "";
+window.addEventListener("load", initialize);
 
 
 async function initialize() {
@@ -26,8 +26,10 @@ async function initialize() {
     products = await fetchProducts();
     if (products) {
         document.getElementById("refine-form")?.removeAttribute("hidden");
+        document.getElementById("refine")?.focus();
     } else {
         document.getElementById("search-form")?.removeAttribute("hidden");
+        document.getElementById("search")?.focus();
     }
 
     currentUrl = await getCurrentUrl();
@@ -89,33 +91,31 @@ async function giveRecommendation() {
     const session = await window.ai.languageModel.create();
 
     const out = document.getElementById("out")!;
+    out.classList.add("grey");
 
-    products = products.replaceAll('------', `\n---\n`);
+    products = products.replaceAll('------', `\n\n`);
 
-    const refineInsert = refineText ? `take the following into account: ${refineText}` : "";
+    const prompt = `
+talk like a personal shopping assistant. recommend the best product from the list below. then give three alternatives. describe for every product its pros and cons.
+use english. don't show table or productlist.
+start with a heading with recommended product.
+${refineText}
 
-    const prompt = `talk like a personal shopping assistant. what are the best products from the list below.
-    recommend one product and also give alternatives. describe for every product its cons and pros.
-    respond in english.
-    ${refineInsert}
-    
-    ${products}`.substring(0, 4000);
+${products}`;
 
-    // console.log('prompt', prompt);
-
-    let initiated = false;
     try {
         const stream = session.promptStreaming(prompt);
+        let cleanText;
         for await (const chunk of stream) {
-            // console.log(chunk);
-            const cleanText = cleanOutput(chunk);
-            if (cleanText && !initiated) {
-                stopThinking();
-                initiated = true;
+            cleanText = cleanOutput(chunk);
+            stopThinking();
+            out.innerHTML = await marked.parse(cleanText || chunk);
+            if (cleanText) {
+                out.classList.remove("grey");
             }
-            chrome.storage.session.set({ [`outText:${currentUrl}`]: cleanText });
-            out.innerHTML = await marked.parse(cleanText);
         }
+        out.classList.remove("grey");
+        chrome.storage.session.set({[`outText:${currentUrl}`]: cleanText});
     } catch (error) {
         showError(`I have some problems. Please click the button again.`, (error as Error).message);
     }
@@ -127,7 +127,9 @@ async function giveRecommendation() {
 function injectedFunction(_messageFromPopup: any) {
     const searchResults = Array.from(document.querySelectorAll(`[data-component-type="s-search-result"]`));
     const data = searchResults.reduce((acc, entry) =>
-        entry.textContent?.includes("Sponsored") ? acc : `${acc}------${entry.textContent}`, '').replaceAll('\n', ' ')
+        entry.textContent?.includes("Sponsored")
+            ? acc
+            : `${acc}------${entry.getElementsByClassName('a-size-medium')?.[0]?.textContent} ${Array.from(entry.getElementsByClassName('a-offscreen')).reduce(((acc, el) => `${acc} ${el.textContent}`), '')}`, '').replaceAll('\n', ' ')
 
     return {type: 'recommendation', data};
 }
@@ -142,6 +144,7 @@ async function getCurrentTab() {
 function showError(text: string, message?: string) {
     stopThinking();
     const out = document.getElementById("out")!;
+    out.classList.remove("grey");
     out.classList.add('error');
     out.innerHTML = `<h3>Sorry, I did something wrong!</h3><p>${text}</p>${message ? `<p class="error-message">${message}</p>` : ''}`;
 }
@@ -179,7 +182,7 @@ async function processRefineForm(event: SubmitEvent) {
         refineText = (document.getElementById('refine') as HTMLTextAreaElement)?.value;
     }
 
-    chrome.storage.session.set({ [`refineText:${currentUrl}`]: refineText });
+    chrome.storage.session.set({[`refineText:${currentUrl}`]: refineText});
 
     startThinking();
     giveRecommendation();
@@ -213,7 +216,7 @@ async function getCurrentUrl() {
 
 function documentClick(event: MouseEvent) {
     const href = (event.target as HTMLAnchorElement).href;
-    if(href) {
+    if (href) {
         chrome.tabs.create({url: href, active: true});
     }
 }

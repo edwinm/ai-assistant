@@ -1,7 +1,6 @@
 Sometimes
 
 - The output stops half way, no more chunks from stream are being generated
-- No output is generated at all, it keeps waiting for the stream
 - "The model attempted to output text in an untested language, and was prevented from doing so."
 - "The execution yielded a bad response."
 
